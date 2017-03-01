@@ -28,7 +28,7 @@ cfg_path = os.path.join(BASEDIR, "settings.cfg")
 
 
 def check_requirements():
-    if not os.path.isfile("/usr/bin/hubic-backup"):
+    if not os.path.isfile("/usr/local/bin/hubic-backup"):
         logger.error(
             "hubic-backup is not installed, run setup.sh!"
         )

@@ -52,7 +52,7 @@ def load_cfg():
 def create_backup_command(backup_cfg, hubic_cfg):
     if hubic_cfg["backup_dir"] == "root":
         hubic_cfg["backup_dir"] = ""
-    cmd = "hubic-backup -l {email} -p {pw} -i {src_dir} -o {dst_dir}".format(
+    cmd = "hubic-backup -l {email} -p {pw} -i {src_dir} -o {dst_dir} -d".format(
         email=hubic_cfg["email"],
         pw=hubic_cfg["password"],
         src_dir=backup_cfg["source_dir"],

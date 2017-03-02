@@ -82,24 +82,40 @@ def run():
     for bs in backup_sections:
         cmd = create_backup_command(bs, hubic_cfg_section)
         print(cmd)
-        enable_schedule(bs.name, cmd)
+        if bs.get("schedule"):
+            enable_schedule(bs, cmd)
         execute_backup(cmd)
 
 
-def enable_schedule(name, cmd):
+def enable_schedule(cfg, cmd):
     cron  = CronTab(user=True)
-    jobs = cron.find_comment("hubic-backup-{0}".format(name))
+    jobs = cron.find_comment("hubic-backup-{0}".format(cfg.name))
     for j in jobs:
         cron.remove(j)
-    job = cron.new(command=cmd, comment="hubic-backup-{0}".format(name))
-    job.minute.every(2)
-    # job.run()
+    job = cron.new(command=cmd, comment="hubic-backup-{0}".format(cfg.name))
+    schedule = cfg["schedule"]
+    if schedule in [
+        "reboot", "annually", "monthly", "weekly", "daily", "hourly"
+    ]:
+        job.setall("@" + schedule)
+    else:
+        logger.error(
+            "Incorrect schedule value in {0}: {1}".format(
+                cfg.name, schedule
+            )
+        )
+        logger.error(
+            "Valid settings: {0}".format(
+                "reboot, annually, monthly, weekly, daily, hourly"
+            )
+        )
+
+        return
     cron.write()
+    logger.info("Scheduled '{0}' to run {1}.".format(cfg.name, schedule))
 
 
 if __name__ == "__main__":
-#    check_requirements()
+    check_requirements()
     load_cfg()
     run()
-#    enable_schedule("niclas", "gedit")
-

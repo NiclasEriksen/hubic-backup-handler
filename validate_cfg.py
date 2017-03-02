@@ -38,9 +38,25 @@ class Validator:
             return False
         return True
 
+    def check_backups(self):
+        backup_sections = [self.cfg[s] for s in self.cfg.sections() if not s == "hubic"]
+        for cfg in backup_sections:
+            if not "encrypt" in cfg:
+                self.log.error("'encrypt' not set in backup section {0}!".format(cfg.name))
+                return False
+            if not "source_dir" in cfg:
+                self.log.error("'source_dir' not set in backup section {0}!".format(cfg.name))
+                return False
+            if not "hubic_dir" in cfg:
+                self.log.error("'hubic_dir' not set in backup section '{0}'!".format(cfg.name))
+                return False
+        return True
+
     def validate(self):
         if not self.check_sections():
             return False
         if not self.check_hubic():
+            return False
+        if not self.check_backups():
             return False
         return True

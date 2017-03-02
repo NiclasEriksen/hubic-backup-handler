@@ -4,7 +4,19 @@ import sys
 import configparser
 import logging
 from validate_cfg import Validator
-from crontab import CronTab
+
+SCHED = True
+try:
+    from crontab import CronTabs
+except ImportError:
+    print("Crontab support is not installed, will not schedule backups.")
+    print(
+        """
+To schedule backups, install python3 package 'python-crontab' or \
+do 'apt-get install python3-crontab'.
+        """
+    )
+    SCHED = False
 
 HUBIC_BIN = "/usr/local/bin/hubic-backup"
 
@@ -81,10 +93,9 @@ def run():
     ]
     for bs in backup_sections:
         cmd = create_backup_command(bs, hubic_cfg_section)
-        print(cmd)
-        if bs.get("schedule"):
-            enable_schedule(bs, cmd)
         execute_backup(cmd)
+        if bs.get("schedule") and SCHED:
+            enable_schedule(bs, cmd)
 
 
 def enable_schedule(cfg, cmd):

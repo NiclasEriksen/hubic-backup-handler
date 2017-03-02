@@ -4,6 +4,9 @@ import sys
 import configparser
 import logging
 from validate_cfg import Validator
+from crontab import CronTab
+
+HUBIC_BIN = "/usr/local/bin/hubic-backup"
 
 # Logging
 logging.basicConfig(
@@ -28,7 +31,7 @@ cfg_path = os.path.join(BASEDIR, "settings.cfg")
 
 
 def check_requirements():
-    if not os.path.isfile("/usr/local/bin/hubic-backup"):
+    if not os.path.isfile(HUBIC_BIN):
         logger.error(
             "hubic-backup is not installed, run setup.sh!"
         )
@@ -52,7 +55,8 @@ def load_cfg():
 def create_backup_command(backup_cfg, hubic_cfg):
     if hubic_cfg["backup_dir"] == "root":
         hubic_cfg["backup_dir"] = ""
-    cmd = "hubic-backup -l {email} -p {pw} -i {src_dir} -o {dst_dir} -d".format(
+    cmd = "{bin} -l {email} -p {pw} -i {src_dir} -o {dst_dir} -d".format(
+        bin=HUBIC_BIN,
         email=hubic_cfg["email"],
         pw=hubic_cfg["password"],
         src_dir=backup_cfg["source_dir"],
@@ -78,10 +82,24 @@ def run():
     for bs in backup_sections:
         cmd = create_backup_command(bs, hubic_cfg_section)
         print(cmd)
+        enable_schedule(bs.name, cmd)
         execute_backup(cmd)
 
 
+def enable_schedule(name, cmd):
+    cron  = CronTab(user=True)
+    jobs = cron.find_comment("hubic-backup-{0}".format(name))
+    for j in jobs:
+        cron.remove(j)
+    job = cron.new(command=cmd, comment="hubic-backup-{0}".format(name))
+    job.minute.every(2)
+    # job.run()
+    cron.write()
+
+
 if __name__ == "__main__":
-    check_requirements()
+#    check_requirements()
     load_cfg()
     run()
+#    enable_schedule("niclas", "gedit")
+

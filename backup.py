@@ -96,6 +96,7 @@ def run():
         execute_backup(cmd)
         if bs.get("schedule") and SCHED:
             enable_schedule(bs, cmd)
+    print("Finished {0} tasks.".format(len(backup_sections)))
 
 
 def enable_schedule(cfg, cmd):

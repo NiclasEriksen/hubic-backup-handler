@@ -7,7 +7,7 @@ from validate_cfg import Validator
 
 SCHED = True
 try:
-    from crontab import CronTabs
+    from crontab import CronTab
 except ImportError:
     print("Crontab support is not installed, will not schedule backups.")
     print(
